@@ -1,0 +1,36 @@
+name: kimai
+services:
+  db:
+    image: mariadb:11
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: kimai
+      MARIADB_USER: kimai
+      MARIADB_PASSWORD: ${DB_PASSWORD:-change-me-db}
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-change-me-root}
+    volumes: [db-data:/var/lib/mysql]
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+  kimai:
+    image: ${KIMAI_IMAGE:-ghcr.io/remarkablecloud/kimai:2.66.0-r1}
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports: ["${HTTP_PORT:-8098}:8001"]
+    environment:
+      KIMAI_DB_HOST: db
+      KIMAI_DB_PORT: "3306"
+      KIMAI_DB_NAME: kimai
+      KIMAI_DB_USER: kimai
+      KIMAI_DB_PASSWORD: ${DB_PASSWORD:-change-me-db}
+      ADMINMAIL: ${ADMINMAIL:-admin@example.com}
+      ADMINPASS: ${ADMINPASS:-}
+    volumes:
+      - kimai-data:/opt/kimai/var/data
+volumes:
+  db-data:
+  kimai-data:
