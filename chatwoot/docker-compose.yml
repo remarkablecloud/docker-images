@@ -1,0 +1,43 @@
+name: chatwoot
+services:
+  postgres:
+    # Chatwoot's schema enables the `vector` extension, so a pgvector image is required.
+    image: pgvector/pgvector:pg16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: chatwoot
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-change-me-db}
+      POSTGRES_DB: chatwoot
+    volumes: [pg-data:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U chatwoot"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD:-change-me-redis}"]
+    volumes: [redis-data:/data]
+  chatwoot:
+    # Runs both the Puma web process and the Sidekiq worker, supervised in one container.
+    image: ${CHATWOOT_IMAGE:-ghcr.io/remarkablecloud/chatwoot:4.17.1-r1}
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports: ["${HTTP_PORT:-3099}:3000"]
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_USERNAME: chatwoot
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-change-me-db}
+      POSTGRES_DATABASE: chatwoot
+      REDIS_URL: redis://:${REDIS_PASSWORD:-change-me-redis}@redis:6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-change-me-redis}
+      FRONTEND_URL: ${SITE_URL:-http://localhost:3099}
+    volumes:
+      - storage:/app/storage
+volumes:
+  pg-data:
+  redis-data:
+  storage:
