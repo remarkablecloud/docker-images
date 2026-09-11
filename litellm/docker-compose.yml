@@ -1,0 +1,31 @@
+name: litellm
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: litellm
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-change-me-db}
+      POSTGRES_DB: litellm
+    volumes: [db-data:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U litellm"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+  litellm:
+    image: ${LITELLM_IMAGE:-ghcr.io/remarkablecloud/litellm:1.100.1-r1}
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports: ["${HTTP_PORT:-4000}:4000"]
+    environment:
+      DATABASE_URL: postgresql://litellm:${DB_PASSWORD:-change-me-db}@db:5432/litellm
+      # Leave empty to auto-generate the master key on first run (printed to the log); or pin one:
+      LITELLM_MASTER_KEY: ${LITELLM_MASTER_KEY:-}
+    volumes:
+      - litellm-data:/app/rc-data
+volumes:
+  db-data:
+  litellm-data:
