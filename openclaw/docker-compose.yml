@@ -1,0 +1,16 @@
+name: openclaw
+services:
+  openclaw:
+    image: ${OPENCLAW_IMAGE:-ghcr.io/remarkablecloud/openclaw:2026.9.4-r1}
+    restart: unless-stopped
+    ports: ["${HTTP_PORT:-18789}:18789"]
+    environment:
+      # Leave empty to auto-generate the gateway token on first run (printed to the log),
+      # or pin your own:
+      OPENCLAW_GATEWAY_TOKEN: ${OPENCLAW_GATEWAY_TOKEN:-}
+      # Optional: provide an LLM key here instead of in the Control UI, e.g.:
+      # OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+    volumes:
+      - openclaw-data:/home/node/.openclaw
+volumes:
+  openclaw-data:
