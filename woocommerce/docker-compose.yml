@@ -1,0 +1,66 @@
+# RemarkableCloud WooCommerce-on-OpenLiteSpeed - standalone stack.
+#
+# Runs a full store anywhere Docker Compose exists (no Coolify needed):
+#   WooCommerce (WordPress + OLS) + MariaDB + Redis object cache, with a persistent wp-content volume.
+#
+# Quick start:
+#   REDIS_PASSWORD=$(openssl rand -hex 16) DB_PASSWORD=$(openssl rand -hex 16) docker compose up -d
+#   # then browse http://localhost:8092 ; admin login is printed in `docker compose logs woocommerce`
+#
+# TLS: this serves plain HTTP on HTTP_PORT. In production a reverse proxy (Traefik, nginx, Caddy,
+# a cloud LB) terminates TLS in front and sets X-Forwarded-Proto/Host; the image derives the
+# canonical URL from those headers automatically.
+name: woocommerce
+
+services:
+  db:
+    image: mariadb:11
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: woocommerce
+      MARIADB_USER: woocommerce
+      MARIADB_PASSWORD: ${DB_PASSWORD:-change-me-db}
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-change-me-root}
+    volumes:
+      - db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD:-change-me-redis}", "--save", "60", "1"]
+    volumes:
+      - redis-data:/data
+
+  woocommerce:
+    # Public image by default; override for a local build: WOO_IMAGE=woocommerce:dev
+    image: ${WOO_IMAGE:-ghcr.io/remarkablecloud/woocommerce:11.1.0-r1}
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "${HTTP_PORT:-8092}:80"
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_NAME: woocommerce
+      WORDPRESS_DB_USER: woocommerce
+      WORDPRESS_DB_PASSWORD: ${DB_PASSWORD:-change-me-db}
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-change-me-redis}
+      WP_ADMIN_USER: ${WP_ADMIN_USER:-admin}
+      WP_ADMIN_PASSWORD: ${WP_ADMIN_PASSWORD:-}
+      WP_ADMIN_EMAIL: ${WP_ADMIN_EMAIL:-admin@example.com}
+      WP_SITE_TITLE: ${WP_SITE_TITLE:-Store}
+    volumes:
+      - wp-content:/var/www/vhosts/wordpress/html/wp-content
+
+volumes:
+  db-data:
+  redis-data:
+  wp-content:
