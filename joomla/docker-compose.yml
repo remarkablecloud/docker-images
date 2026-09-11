@@ -1,0 +1,42 @@
+# RemarkableCloud Joomla - standalone (Joomla + MariaDB + content volume). Headless install from env.
+#   DB_PASSWORD=$(openssl rand -hex 16) docker compose up -d   # -> http://localhost:8087 (admin pw in logs)
+# Production runs behind a TLS-terminating proxy.
+name: joomla
+services:
+  db:
+    image: mariadb:11
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: joomla
+      MARIADB_USER: joomla
+      MARIADB_PASSWORD: ${DB_PASSWORD:-change-me-db}
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-change-me-root}
+    volumes: [db-data:/var/lib/mysql]
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+  joomla:
+    image: ${JOOMLA_IMAGE:-ghcr.io/remarkablecloud/joomla:5-r1}
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports: ["${HTTP_PORT:-8087}:80"]
+    environment:
+      JOOMLA_DB_TYPE: mysqli
+      JOOMLA_DB_HOST: db
+      JOOMLA_DB_NAME: joomla
+      JOOMLA_DB_USER: joomla
+      JOOMLA_DB_PASSWORD: ${DB_PASSWORD:-change-me-db}
+      JOOMLA_SITE_NAME: ${JOOMLA_SITE_NAME:-Joomla}
+      JOOMLA_ADMIN_USER: ${JOOMLA_ADMIN_USER:-Administrator}
+      JOOMLA_ADMIN_USERNAME: ${JOOMLA_ADMIN_USERNAME:-admin}
+      JOOMLA_ADMIN_PASSWORD: ${JOOMLA_ADMIN_PASSWORD:-}
+      JOOMLA_ADMIN_EMAIL: ${JOOMLA_ADMIN_EMAIL:-admin@example.com}
+    volumes:
+      - joomla-data:/var/www/html
+volumes:
+  db-data:
+  joomla-data:
