@@ -1,0 +1,39 @@
+name: drupal
+services:
+  db:
+    image: mariadb:11
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: drupal
+      MARIADB_USER: drupal
+      MARIADB_PASSWORD: ${DB_PASSWORD:-change-me-db}
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-change-me-root}
+    volumes: [db-data:/var/lib/mysql]
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+  drupal:
+    image: ${DRUPAL_IMAGE:-ghcr.io/remarkablecloud/drupal:11.4.6-r1}
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports: ["${HTTP_PORT:-8097}:80"]
+    environment:
+      DRUPAL_DB_HOST: db
+      DRUPAL_DB_PORT: "3306"
+      DRUPAL_DB_NAME: drupal
+      DRUPAL_DB_USER: drupal
+      DRUPAL_DB_PASSWORD: ${DB_PASSWORD:-change-me-db}
+      DRUPAL_ADMIN_USER: ${DRUPAL_ADMIN_USER:-admin}
+      DRUPAL_ADMIN_PASSWORD: ${DRUPAL_ADMIN_PASSWORD:-}
+      DRUPAL_ADMIN_EMAIL: ${DRUPAL_ADMIN_EMAIL:-admin@example.com}
+      DRUPAL_SITE_NAME: ${DRUPAL_SITE_NAME:-Drupal}
+      DRUPAL_TRUSTED_HOST: ${DRUPAL_TRUSTED_HOST:-}
+    volumes:
+      - drupal-default:/opt/drupal/web/sites/default
+volumes:
+  db-data:
+  drupal-default:
