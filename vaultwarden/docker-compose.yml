@@ -1,0 +1,18 @@
+# RemarkableCloud Vaultwarden - standalone (SQLite; persistent /data volume).
+#   DOMAIN=https://vault.example.com docker compose up -d   # -> http://localhost:8086
+# Production runs behind a TLS-terminating proxy; the catalog sets DOMAIN=https://<hostname>.
+name: vaultwarden
+
+services:
+  vaultwarden:
+    image: ${VW_IMAGE:-ghcr.io/remarkablecloud/vaultwarden:1-r1}
+    restart: unless-stopped
+    ports: ["${HTTP_PORT:-8086}:80"]
+    environment:
+      DOMAIN: ${DOMAIN:-http://localhost:8086}
+      SIGNUPS_ALLOWED: ${SIGNUPS_ALLOWED:-true}
+    volumes:
+      - vw-data:/data
+
+volumes:
+  vw-data:

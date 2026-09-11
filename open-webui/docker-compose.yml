@@ -1,0 +1,20 @@
+# RemarkableCloud Open WebUI + Ollama - standalone (single container; SQLite; two data volumes).
+#   docker compose up -d   # -> http://localhost:8084  (create the admin account on first visit)
+# Pull models from the UI (Settings -> Models) or `docker exec <c> ollama pull llama3.2`.
+# Needs real RAM once a model is loaded. Production runs behind a TLS-terminating proxy.
+name: open-webui
+
+services:
+  open-webui:
+    image: ${OWUI_IMAGE:-ghcr.io/remarkablecloud/open-webui:0.11.3-r1}
+    restart: unless-stopped
+    ports: ["${HTTP_PORT:-8084}:8080"]
+    environment:
+      WEBUI_URL: ${WEBUI_URL:-http://localhost:8084}
+    volumes:
+      - owui-data:/app/backend/data
+      - ollama-data:/root/.ollama
+
+volumes:
+  owui-data:
+  ollama-data:

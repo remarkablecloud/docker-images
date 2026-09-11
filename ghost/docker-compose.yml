@@ -1,0 +1,44 @@
+# RemarkableCloud Ghost - standalone stack (Ghost + MySQL 8 + content volume).
+#   DB_PASSWORD=$(openssl rand -hex 16) docker compose up -d   # -> http://localhost:8083
+# Production runs behind a TLS-terminating proxy; the catalog sets url=https://<hostname>.
+name: ghost
+
+services:
+  db:
+    image: mysql:8
+    restart: unless-stopped
+    command: ["--mysql-native-password=ON"]
+    environment:
+      MYSQL_DATABASE: ghost
+      MYSQL_USER: ghost
+      MYSQL_PASSWORD: ${DB_PASSWORD:-change-me-db}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-change-me-root}
+    volumes: [db-data:/var/lib/mysql]
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${DB_ROOT_PASSWORD:-change-me-root}"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+
+  ghost:
+    image: ${GHOST_IMAGE:-ghcr.io/remarkablecloud/ghost:6.63.0-r2}
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports: ["${HTTP_PORT:-8083}:2368"]
+    environment:
+      url: ${GHOST_URL:-http://localhost:8083}
+      NODE_ENV: production
+      database__client: mysql
+      database__connection__host: db
+      database__connection__port: "3306"
+      database__connection__user: ghost
+      database__connection__password: ${DB_PASSWORD:-change-me-db}
+      database__connection__database: ghost
+    volumes:
+      - ghost-content:/var/lib/ghost/content
+
+volumes:
+  db-data:
+  ghost-content:

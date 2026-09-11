@@ -1,0 +1,55 @@
+# RemarkableCloud WordPress on LiteSpeed Enterprise - standalone (WP+LSWS-Ent + MariaDB + Redis).
+#   REDIS_PASSWORD=$(openssl rand -hex 16) DB_PASSWORD=$(openssl rand -hex 16) \
+#   WP_ADMIN_PASSWORD=$(openssl rand -hex 12) docker compose up -d   # -> http://localhost:8085
+# Runs on a LiteSpeed 14-day trial by default; set LSWS_SERIAL to bring your own license.
+name: wordpress-litespeed
+
+services:
+  db:
+    image: mariadb:11
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: wordpress
+      MARIADB_USER: wordpress
+      MARIADB_PASSWORD: ${DB_PASSWORD:-change-me-db}
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-change-me-root}
+    volumes: [db-data:/var/lib/mysql]
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD:-change-me-redis}", "--save", "60", "1"]
+    volumes: [redis-data:/data]
+
+  wordpress:
+    image: ${WP_LS_IMAGE:-ghcr.io/remarkablecloud/wordpress-litespeed:6.3.6-r1}
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports: ["${HTTP_PORT:-8085}:80"]
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_NAME: wordpress
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: ${DB_PASSWORD:-change-me-db}
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-change-me-redis}
+      WP_ADMIN_USER: ${WP_ADMIN_USER:-admin}
+      WP_ADMIN_PASSWORD: ${WP_ADMIN_PASSWORD:-}
+      WP_ADMIN_EMAIL: ${WP_ADMIN_EMAIL:-admin@example.com}
+      WP_SITE_TITLE: ${WP_SITE_TITLE:-WordPress}
+      # LSWS_SERIAL: <your LiteSpeed Enterprise serial>   # omit to run on the trial license
+    volumes:
+      - wp-content:/var/www/vhosts/localhost/html/wp-content
+
+volumes:
+  db-data:
+  redis-data:
+  wp-content:

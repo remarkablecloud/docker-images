@@ -1,0 +1,11 @@
+# RemarkableCloud Uptime Kuma - standalone. SQLite; /app/data volume. Set up the admin on first visit.
+name: uptime-kuma
+services:
+  uptime-kuma:
+    image: ${UK_IMAGE:-ghcr.io/remarkablecloud/uptime-kuma:1-r1}
+    restart: unless-stopped
+    ports: ["${HTTP_PORT:-3001}:3001"]
+    volumes:
+      - uk-data:/app/data
+volumes:
+  uk-data:

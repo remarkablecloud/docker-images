@@ -1,0 +1,54 @@
+# RemarkableCloud Nextcloud - standalone stack (Nextcloud + MariaDB + Redis + data volume).
+#   REDIS_PASSWORD=$(openssl rand -hex 16) DB_PASSWORD=$(openssl rand -hex 16) \
+#   NEXTCLOUD_ADMIN_PASSWORD=$(openssl rand -hex 12) docker compose up -d   # -> http://localhost:8082
+# Production runs behind a TLS-terminating proxy; the baked config sets overwriteprotocol=https +
+# trusted_proxies, and the catalog passes the app hostname (NC_OVERWRITE_HOST + trusted domain).
+name: nextcloud
+
+services:
+  db:
+    image: mariadb:11
+    restart: unless-stopped
+    command: ["--transaction-isolation=READ-COMMITTED", "--log-bin=binlog", "--binlog-format=ROW"]
+    environment:
+      MARIADB_DATABASE: nextcloud
+      MARIADB_USER: nextcloud
+      MARIADB_PASSWORD: ${DB_PASSWORD:-change-me-db}
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-change-me-root}
+    volumes: [db-data:/var/lib/mysql]
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD:-change-me-redis}"]
+
+  app:
+    image: ${NC_IMAGE:-ghcr.io/remarkablecloud/nextcloud:34.0.3-r1}
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports: ["${HTTP_PORT:-8082}:80"]
+    environment:
+      MYSQL_HOST: db
+      MYSQL_DATABASE: nextcloud
+      MYSQL_USER: nextcloud
+      MYSQL_PASSWORD: ${DB_PASSWORD:-change-me-db}
+      REDIS_HOST: redis
+      REDIS_HOST_PORT: "6379"
+      REDIS_HOST_PASSWORD: ${REDIS_PASSWORD:-change-me-redis}
+      NEXTCLOUD_ADMIN_USER: ${NEXTCLOUD_ADMIN_USER:-admin}
+      NEXTCLOUD_ADMIN_PASSWORD: ${NEXTCLOUD_ADMIN_PASSWORD:-}
+      NEXTCLOUD_TRUSTED_DOMAINS: ${NEXTCLOUD_TRUSTED_DOMAINS:-localhost}
+      NC_OVERWRITE_HOST: ${NC_OVERWRITE_HOST:-}
+    volumes:
+      - nc-data:/var/www/html
+
+volumes:
+  db-data:
+  nc-data:
