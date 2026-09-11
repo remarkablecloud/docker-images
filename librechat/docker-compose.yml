@@ -1,0 +1,28 @@
+name: librechat
+services:
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: librechat
+      MONGO_INITDB_ROOT_PASSWORD: ${DB_PASSWORD:-change-me-db}
+    volumes: [mongo-data:/data/db]
+  librechat:
+    image: ${LIBRECHAT_IMAGE:-ghcr.io/remarkablecloud/librechat:0.8.7-r1}
+    restart: unless-stopped
+    depends_on: [mongo]
+    ports: ["${HTTP_PORT:-3080}:3080"]
+    environment:
+      MONGO_URI: mongodb://librechat:${DB_PASSWORD:-change-me-db}@mongo:27017/LibreChat?authSource=admin
+      # Optional: pin the initial account (else admin@example.com + a generated password):
+      RC_USER_EMAIL: ${RC_USER_EMAIL:-}
+      RC_USER_PASSWORD: ${RC_USER_PASSWORD:-}
+    volumes:
+      - librechat-data:/app/rc-data
+      - librechat-uploads:/app/uploads
+      - librechat-images:/app/client/public/images
+volumes:
+  mongo-data:
+  librechat-data:
+  librechat-uploads:
+  librechat-images:
