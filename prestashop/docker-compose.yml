@@ -1,0 +1,36 @@
+name: prestashop
+services:
+  db:
+    image: mariadb:11
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: prestashop
+      MARIADB_USER: prestashop
+      MARIADB_PASSWORD: ${DB_PASSWORD:-change-me-db}
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-change-me-root}
+    volumes: [db-data:/var/lib/mysql]
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+  prestashop:
+    image: ${PRESTASHOP_IMAGE:-ghcr.io/remarkablecloud/prestashop:8.2.8-r1}
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports: ["${HTTP_PORT:-8094}:80"]
+    environment:
+      DB_SERVER: db
+      DB_PORT: "3306"
+      DB_NAME: prestashop
+      DB_USER: prestashop
+      DB_PASSWD: ${DB_PASSWORD:-change-me-db}
+      PS_DOMAIN: ${PS_DOMAIN:-localhost:8094}
+      ADMIN_MAIL: ${ADMIN_MAIL:-admin@example.com}
+    volumes:
+      - ps-data:/var/www/html
+volumes:
+  db-data:
+  ps-data:
