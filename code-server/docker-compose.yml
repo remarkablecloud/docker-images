@@ -1,0 +1,15 @@
+# RemarkableCloud Code Server - standalone. Persistent /home/coder volume (settings, extensions, projects).
+#   docker compose up -d   # -> http://localhost:8443 ; login password is printed in the logs
+# Production runs behind a TLS-terminating proxy; set PASSWORD to pin a password, or leave it to auto-generate.
+name: code-server
+services:
+  code-server:
+    image: ${CS_IMAGE:-ghcr.io/remarkablecloud/code-server:4.137.0-r1}
+    restart: unless-stopped
+    ports: ["${HTTP_PORT:-8443}:8080"]
+    environment:
+      PASSWORD: ${PASSWORD:-}
+    volumes:
+      - cs-data:/home/coder
+volumes:
+  cs-data:
