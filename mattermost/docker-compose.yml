@@ -1,0 +1,37 @@
+name: mattermost
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: mattermost
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-change-me-db}
+      POSTGRES_DB: mattermost
+    volumes: [db-data:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mattermost"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+  mattermost:
+    image: ${MM_IMAGE:-ghcr.io/remarkablecloud/mattermost:11.10.1-r1}
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports: ["${HTTP_PORT:-8099}:8065"]
+    environment:
+      MM_SQLSETTINGS_DATASOURCE: postgres://mattermost:${DB_PASSWORD:-change-me-db}@db:5432/mattermost?sslmode=disable
+      MM_SERVICESETTINGS_SITEURL: ${SITE_URL:-http://localhost:8099}
+      MM_ADMIN_PASSWORD: ${MM_ADMIN_PASSWORD:-}
+    volumes:
+      - mm-data:/mattermost/data
+      - mm-config:/mattermost/config
+      - mm-plugins:/mattermost/plugins
+      - mm-client-plugins:/mattermost/client/plugins
+volumes:
+  db-data:
+  mm-data:
+  mm-config:
+  mm-plugins:
+  mm-client-plugins:
