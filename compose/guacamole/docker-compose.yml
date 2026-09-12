@@ -4,7 +4,9 @@
 # WEBAPP_CONTEXT=ROOT, behind Traefik). The broker injects GUAC_ADMIN_PASSWORD + GUAC_DB_PASSWORD.
 services:
   guacdb:
-    image: postgres:16
+    # RC image = postgres:16 with the Guacamole schema + a generated admin baked into initdb (Coolify's
+    # compose deploy strips repo-relative bind mounts, so the init scripts can't be mounted from the repo).
+    image: ghcr.io/remarkablecloud/guacamole-db:1.6.0-r1
     restart: unless-stopped
     environment:
       POSTGRES_DB: guacamole_db
@@ -14,7 +16,6 @@ services:
       GUAC_ADMIN_PASSWORD: ${GUAC_ADMIN_PASSWORD}
     volumes:
       - guac-pg:/var/lib/postgresql/data
-      - ./init:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U guacamole -d guacamole_db"]
       interval: 10s
