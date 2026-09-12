@@ -1,0 +1,21 @@
+# Pi-hole (v6) - Coolify docker-compose deploy for the RemarkableCloud App Platform.
+# The RC broker injects the environment referenced below (${...}) and pins the web service to the
+# instance hostname via docker_compose_domains. DNS is published raw on the host (:53 tcp+udp), which
+# the dockerimage path cannot express. SERVICE_FQDN_PIHOLE_80 tells Coolify the web port for Traefik.
+services:
+  pihole:
+    image: pihole/pihole:2026.07.2
+    restart: unless-stopped
+    environment:
+      - SERVICE_FQDN_PIHOLE_80
+      - FTLCONF_webserver_api_password=${FTLCONF_webserver_api_password}
+      - FTLCONF_dns_listeningMode=${FTLCONF_dns_listeningMode}
+      - FTLCONF_dns_upstreams=${FTLCONF_dns_upstreams}
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+    volumes:
+      - pihole-etc:/etc/pihole
+
+volumes:
+  pihole-etc:
