@@ -1,6 +1,6 @@
 services:
   portainer:
-    image: ghcr.io/remarkablecloud/portainer:2.45.0-r1
+    image: ghcr.io/remarkablecloud/portainer:2.45.0-r2
     restart: unless-stopped
     environment:
       # A generated admin is created on first boot from this password (min 12 chars).

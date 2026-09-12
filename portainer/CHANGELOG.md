@@ -2,6 +2,12 @@
 
 All notable changes to the RemarkableCloud Portainer image.
 
+## 2.45.0-r2 - 2026-09-12
+
+- Bind the local Docker environment explicitly with `-H unix:///var/run/docker.sock` when the socket
+  is present. With a pre-seeded admin, Portainer skips the setup wizard that would otherwise connect
+  the local environment, so without this the environment list came up empty on first boot.
+
 ## 2.45.0-r1 - 2026-09-12
 
 - Initial RemarkableCloud build. Base: `portainer/portainer-ce:2.45.0` (digest-pinned).

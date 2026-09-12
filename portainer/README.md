@@ -5,7 +5,7 @@ Portainer CE, a web UI for managing Docker (containers, images, volumes, and net
 ## Pull
 
 ```bash
-docker pull ghcr.io/remarkablecloud/portainer:2.45.0-r1
+docker pull ghcr.io/remarkablecloud/portainer:2.45.0-r2
 ```
 
 ## Quick start
