@@ -14,6 +14,6 @@ Run `docker compose up -d` with the bundled `docker-compose.yml`, open http://lo
 
 ## More
 
-Full guide (compose walkthrough, environment reference, hardening, backup, and upgrade): the Open WebUI page in the RemarkableCloud docker images section on remarkablecloud.com, published alongside this image. Maintainers: that page is generated from `site.md` in this directory.
+Full guide (compose walkthrough, environment reference, hardening, backup, and upgrade): the Open WebUI page in the RemarkableCloud docker images section on remarkablecloud.com, published alongside this image.
 
 **Upstream license:** Open WebUI: BSD-3-Clause with branding clause; Ollama: MIT

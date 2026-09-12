@@ -21,6 +21,6 @@ Leave `PASSWORD` unset to auto-generate one (printed once to the log and persist
 
 ## More
 
-Full documentation (compose walkthrough, environment reference, hardening, backup, and upgrade guidance) is authored in [`site.md`](./site.md). Build history and security-relevant changes are in [`CHANGELOG.md`](./CHANGELOG.md).
+Build history and security-relevant changes are in [`CHANGELOG.md`](./CHANGELOG.md).
 
 **Upstream license:** code-server: MIT

@@ -21,7 +21,6 @@ on your first visit.
 ## More
 
 Setup walkthrough, hardening notes, backup and upgrade guidance, and a full
-compose reference live in [`site.md`](./site.md), which is published to the
-RemarkableCloud docker images documentation section when it goes live.
+compose reference are published in the RemarkableCloud docker images documentation section on remarkablecloud.com.
 
 **Upstream license:** Uptime Kuma: MIT

@@ -14,6 +14,6 @@ Run `docker compose up -d` with the bundled `docker-compose.yml`, then open http
 
 ## More
 
-Full guide (compose walkthrough, environment reference, hardening, backup, and upgrade): the n8n page in the RemarkableCloud docker images section on remarkablecloud.com, published alongside this image. Maintainers: that page is generated from `site.md` in this directory.
+Full guide (compose walkthrough, environment reference, hardening, backup, and upgrade): the n8n page in the RemarkableCloud docker images section on remarkablecloud.com, published alongside this image.
 
 **Upstream license:** n8n: Sustainable Use License (source-available)

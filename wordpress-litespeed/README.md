@@ -25,8 +25,7 @@ on port 80 and derives its canonical URL from the `X-Forwarded-Proto` and `X-For
 
 ## More
 
-Full documentation (licensing, compose walkthrough, environment reference, hardening, backup, and
-upgrade guidance) lives on the RemarkableCloud site and is authored in [`site.md`](./site.md). The
+The
 build history and security-relevant changes are in [`CHANGELOG.md`](./CHANGELOG.md).
 
 **Upstream license:** WordPress: GPLv2-or-later (LiteSpeed Enterprise: commercial, bring your own license)

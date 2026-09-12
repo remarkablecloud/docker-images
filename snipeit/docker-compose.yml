@@ -1,0 +1,39 @@
+name: snipeit
+services:
+  db:
+    # Snipe-IT stores everything in MySQL/MariaDB.
+    image: mysql:8
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: snipeit
+      MYSQL_USER: snipeit
+      MYSQL_PASSWORD: ${DB_PASSWORD:-change-me-db}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-change-me-root}
+    volumes: [db-data:/var/lib/mysql]
+    healthcheck:
+      # Ping over TCP (127.0.0.1), not the socket: mysql:8 runs a temporary
+      # socket-only server during init, so a socket ping reports "alive" early.
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+  snipeit:
+    # Generates and persists APP_KEY, creates the superuser, closes /setup, then serves on 80.
+    image: ${SNIPEIT_IMAGE:-ghcr.io/remarkablecloud/snipeit:8.7.2-r1}
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports: ["${HTTP_PORT:-8098}:80"]
+    environment:
+      DB_HOST: db
+      DB_PORT: "3306"
+      DB_DATABASE: snipeit
+      DB_USERNAME: snipeit
+      DB_PASSWORD: ${DB_PASSWORD:-change-me-db}
+      APP_URL: ${SITE_URL:-http://localhost:8098}
+    volumes:
+      - data:/var/lib/snipeit
+volumes:
+  db-data:
+  data:

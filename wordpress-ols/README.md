@@ -24,8 +24,7 @@ its canonical URL from the `X-Forwarded-Proto` and `X-Forwarded-Host` headers.
 
 ## More
 
-Full documentation (compose walkthrough, environment reference, hardening, backup, and upgrade
-guidance) lives on the RemarkableCloud site and is authored in [`site.md`](./site.md). The build
+The build
 history and security-relevant changes are in [`CHANGELOG.md`](./CHANGELOG.md).
 
 **Upstream license:** WordPress: GPLv2-or-later (OpenLiteSpeed server: GPLv3)

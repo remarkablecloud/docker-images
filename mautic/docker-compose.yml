@@ -1,0 +1,42 @@
+name: mautic
+services:
+  db:
+    image: mysql:8
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: mautic
+      MYSQL_USER: mautic
+      MYSQL_PASSWORD: ${DB_PASSWORD:-change-me-db}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-change-me-root}
+    volumes: [db-data:/var/lib/mysql]
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+  mautic:
+    # Apache (mod_php) in the foreground plus a background cron loop, in one container.
+    image: ${MAUTIC_IMAGE:-ghcr.io/remarkablecloud/mautic:5.2.11-r1}
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports: ["${HTTP_PORT:-8097}:80"]
+    environment:
+      MAUTIC_DB_HOST: db
+      MAUTIC_DB_PORT: "3306"
+      MAUTIC_DB_NAME: mautic
+      MAUTIC_DB_USER: mautic
+      MAUTIC_DB_PASSWORD: ${DB_PASSWORD:-change-me-db}
+      MAUTIC_SITE_URL: ${SITE_URL:-http://localhost:8097}
+    volumes:
+      - config:/var/www/html/config
+      - media-files:/var/www/html/docroot/media/files
+      - media-images:/var/www/html/docroot/media/images
+      - logs:/var/www/html/var/logs
+volumes:
+  db-data:
+  config:
+  media-files:
+  media-images:
+  logs:

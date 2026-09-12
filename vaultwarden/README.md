@@ -14,6 +14,6 @@ Set your public URL and run `DOMAIN=https://vault.example.com docker compose up 
 
 ## More
 
-Full guide (compose walkthrough, environment reference, hardening, backup, and upgrade): the Vaultwarden page in the RemarkableCloud docker images section on remarkablecloud.com, published alongside this image. Maintainers: that page is generated from `site.md` in this directory.
+Full guide (compose walkthrough, environment reference, hardening, backup, and upgrade): the Vaultwarden page in the RemarkableCloud docker images section on remarkablecloud.com, published alongside this image.
 
 **Upstream license:** Vaultwarden: AGPL-3.0-only

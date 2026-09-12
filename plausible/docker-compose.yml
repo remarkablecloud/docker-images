@@ -1,0 +1,46 @@
+name: plausible
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: plausible
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-change-me-db}
+      POSTGRES_DB: plausible_db
+    volumes: [pg-data:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U plausible"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+  clickhouse:
+    # ClickHouse holds the analytics events; Plausible reaches it over the HTTP interface on 8123 (not native 9000).
+    # ClickHouse 24.12 requires a password for the default user, so CLICKHOUSE_PASSWORD is mandatory.
+    image: clickhouse/clickhouse-server:24.12-alpine
+    restart: unless-stopped
+    environment:
+      CLICKHOUSE_USER: default
+      CLICKHOUSE_PASSWORD: ${CH_PASSWORD:-change-me-ch}
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+    volumes: [ch-data:/var/lib/clickhouse]
+  plausible:
+    # Creates both databases, runs migrations, and inserts the generated admin on first boot.
+    image: ${PLAUSIBLE_IMAGE:-ghcr.io/remarkablecloud/plausible:3.2.1-r1}
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports: ["${HTTP_PORT:-8095}:8000"]
+    environment:
+      DATABASE_URL: postgres://plausible:${DB_PASSWORD:-change-me-db}@postgres:5432/plausible_db
+      CLICKHOUSE_DATABASE_URL: http://default:${CH_PASSWORD:-change-me-ch}@clickhouse:8123/plausible_events_db
+      BASE_URL: ${SITE_URL:-http://localhost:8095}
+    volumes:
+      - plausible-data:/var/lib/plausible
+volumes:
+  pg-data:
+  ch-data:
+  plausible-data:

@@ -19,6 +19,6 @@ REDIS_PASSWORD=$(openssl rand -hex 16) DB_PASSWORD=$(openssl rand -hex 16) docke
 
 ## More
 
-Full documentation (compose walkthrough, environment reference, hardening, backup, and upgrade guidance) is authored in [`site.md`](./site.md). Build history and security-relevant changes are in [`CHANGELOG.md`](./CHANGELOG.md).
+Build history and security-relevant changes are in [`CHANGELOG.md`](./CHANGELOG.md).
 
 **Upstream license:** WooCommerce: GPL-3.0-or-later; WordPress: GPLv2-or-later (OpenLiteSpeed server: GPLv3)

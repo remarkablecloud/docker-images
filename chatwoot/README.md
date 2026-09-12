@@ -20,6 +20,6 @@ DB_PASSWORD=$(openssl rand -hex 16) REDIS_PASSWORD=$(openssl rand -hex 16) docke
 
 ## More
 
-Full documentation (compose walkthrough, environment reference, hardening, backup, and upgrade guidance) is authored in [`site.md`](./site.md). Build history and security-relevant changes are in [`CHANGELOG.md`](./CHANGELOG.md).
+Build history and security-relevant changes are in [`CHANGELOG.md`](./CHANGELOG.md).
 
 **Upstream license:** Chatwoot: MIT (with a separately licensed `enterprise/` directory, not enabled in this image).

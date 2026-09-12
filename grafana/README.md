@@ -25,7 +25,6 @@ docker compose logs grafana | grep '\[rc\]'
 ## More
 
 Environment reference, hardening notes, backup and upgrade guidance, and a full
-compose walkthrough live in [`site.md`](./site.md), which is published to the
-RemarkableCloud docker images documentation section when it goes live.
+compose walkthrough are published in the RemarkableCloud docker images documentation section on remarkablecloud.com.
 
 **Upstream license:** Grafana OSS: AGPL-3.0-only
