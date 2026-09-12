@@ -1,0 +1,17 @@
+services:
+  portainer:
+    image: ghcr.io/remarkablecloud/portainer:2.45.0-r1
+    restart: unless-stopped
+    environment:
+      # A generated admin is created on first boot from this password (min 12 chars).
+      PORTAINER_ADMIN_PASSWORD: ${PORTAINER_ADMIN_PASSWORD:?set a strong admin password}
+      # Full external URL(s) allowed to make changes (CSRF/Origin check behind a proxy).
+      PORTAINER_TRUSTED_ORIGINS: ${PORTAINER_TRUSTED_ORIGINS:-http://localhost:9000}
+    ports:
+      - "9000:9000"
+    volumes:
+      - portainer-data:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+
+volumes:
+  portainer-data:
